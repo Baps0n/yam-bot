@@ -11,7 +11,7 @@ DISCORD_TOKEN = data['bot_token']
 LOGIN = data['yam_account']['login']
 PASSWORD = data['yam_account']['password']
 
-yam_client = Client.fromCredentials(LOGIN, PASSWORD)
+yam_client = Client.fromCredentials(LOGIN, PASSWORD, report_new_fields=False)
 
 bot = YamBot(command_prefix=']', yam_client=yam_client)
 bot.add_cog(YamCommands(bot, yam_client))
