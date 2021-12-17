@@ -17,6 +17,10 @@ class YamBot(Bot):
         """
         print('Бот работает')
 
+    async def on_message(self, message):
+        ctx = await self.get_context(message)
+        await self.invoke(ctx)
+
 
 def data_clear():
     """
@@ -47,7 +51,6 @@ class YamCommands(commands.Cog):
         Выводит список доступных команд и их описание.
         :param ctx: Класс Context из discord.py, содержащий информацию о боте.
         """
-        await self.silent_join(ctx)
         pr = self.bot.command_prefix
         help_text = f'**{pr}play, {pr}p **- Выполнить поиск по названию\n' \
                     f'**{pr}play_artist, {pr}pa **- Выполнить поиск альбомов по имени исполнителя\n' \
@@ -56,6 +59,7 @@ class YamCommands(commands.Cog):
                     f'**{pr}join, {pr}j **- Переместить бота в ваш канал.'
         await ctx.send(help_text)
 
+    @commands.command()
     async def silent_join(self, ctx):
         """
         Подключает бота к каналу пользователя.
@@ -82,6 +86,7 @@ class YamCommands(commands.Cog):
         :param ctx: Класс Context из discord.py, содержащий информацию о боте.
         """
         await ctx.voice_client.disconnect()
+        self.track_list = []
         await ctx.send(f'Отключен от канала {ctx.author.voice.channel}')
 
     @commands.command(aliases=['p'])
@@ -155,16 +160,17 @@ class YamCommands(commands.Cog):
         await ctx.send(artist_album_choose)
 
         msg = await self.bot.wait_for("message")
-        track_num = int(msg.content) - 1
+        if msg.content.isdigit():
+            track_num = int(msg.content) - 1
 
-        album_id = sorted_artist_albums[track_num]["id"]
-        artist_album_tracks = self.yam_client.albums_with_tracks(album_id)["volumes"][0]
-        for i in artist_album_tracks:
-            self.download(i)
-        await ctx.send(f'Треков добавлено в очередь: {len(artist_album_tracks)}')
+            album_id = sorted_artist_albums[track_num]["id"]
+            artist_album_tracks = self.yam_client.albums_with_tracks(album_id)["volumes"][0]
+            for i in artist_album_tracks:
+                self.download(i)
+            await ctx.send(f'Треков добавлено в очередь: {len(artist_album_tracks)}')
 
-        if not self.is_playing:
-            await self.start_player(ctx)
+            if not self.is_playing:
+                await self.start_player(ctx)
 
     async def start_player(self, ctx):
         """
@@ -176,18 +182,19 @@ class YamCommands(commands.Cog):
             if not ctx.voice_client.is_playing():
                 await self.play_track(ctx, self.track_list[0])
                 del self.track_list[0]
-                print(self.track_list)
             await asyncio.sleep(1)
         self.is_playing = False
         data_clear()
 
+    @commands.command()
     async def play_track(self, ctx, track):
+        track = eval(str(track))
         """
         Воспроизводит трек `track`.
         :param ctx: Класс Context из discord.py, содержащий информацию о боте.
         :param track: словарь, характеризующий воспроизводимый трек.
         """
-        ctx.voice_client.play(discord.FFmpegPCMAudio(executable="ffmpeg.exe", source=f'music\\{track["route"]}.mp3'))
+        ctx.voice_client.play(discord.FFmpegPCMAudio(executable="ffmpeg.exe", source=f'{track["route"]}'))
         await ctx.send(f'Воспроизведение **{track["name"]}** от {track["author"]}')
 
     @commands.command(aliases=['pl'])
@@ -218,7 +225,6 @@ class YamCommands(commands.Cog):
             await ctx.send(f'Из плейлиста удалено {skip_amount} треков')
             ctx.voice_client.stop()
         elif skip_amount == '':
-            print(self.track_list)
             await ctx.send(f'Трек пропущен')
             ctx.voice_client.stop()
 
@@ -230,7 +236,7 @@ class YamCommands(commands.Cog):
         track_route = ''.join(random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') for _ in range(10))
         track.download(f'music\\{track_route}.mp3', bitrate_in_kbps=192)
         track_data = {
-            "route": track_route,
+            "route": f'music\\{track_route}.mp3',
             "name": track["title"],
             "author": track["artists"][0]["name"]
         }

@@ -16,4 +16,3 @@ yam_client = Client.fromCredentials(LOGIN, PASSWORD, report_new_fields=False)
 bot = YamBot(command_prefix=']', yam_client=yam_client, help_command=None)
 bot.add_cog(YamCommands(bot, yam_client))
 bot.run(DISCORD_TOKEN)
-
