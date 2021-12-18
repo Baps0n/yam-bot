@@ -5,7 +5,6 @@ from distest import run_dtest_bot
 
 test_collector = TestCollector()
 created_channel = None
-# python .\tests.py 899248710444281876 OTIxMDA5ODIxMDUyOTY0OTA1.YbsrPA.LdxRgv-Ll70Njp8gqxxH29mkiZk -c 904323058293174272 -r all
 
 
 @test_collector()

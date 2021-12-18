@@ -18,6 +18,9 @@ class YamBot(Bot):
         print('Бот работает')
 
     async def on_message(self, message):
+        """
+        Позволяет принимать команды от других ботов.
+        """
         ctx = await self.get_context(message)
         await self.invoke(ctx)
 
@@ -87,6 +90,7 @@ class YamCommands(commands.Cog):
         """
         await ctx.voice_client.disconnect()
         self.track_list = []
+        data_clear()
         await ctx.send(f'Отключен от канала {ctx.author.voice.channel}')
 
     @commands.command(aliases=['p'])
