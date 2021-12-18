@@ -238,6 +238,7 @@ class YamCommands(commands.Cog):
         :param track:
         """
         track_route = ''.join(random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') for _ in range(10))
+        os.makedirs('music', exist_ok=True)
         track.download(f'music\\{track_route}.mp3', bitrate_in_kbps=192)
         track_data = {
             "route": f'music\\{track_route}.mp3',
